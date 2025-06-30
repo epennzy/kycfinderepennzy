@@ -4,16 +4,9 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="theme-color" content="#4361EE" />
-  <title>KYC Finder - Temukan Job Verifikasi</title>
-  <!-- Open Graph / WhatsApp Metadata -->
-  <meta property="og:title" content="KYC Finder" />
-  <meta property="og:description" content="Temukan job verifikasi KYC terbaru" />
-  <meta property="og:image" content="https://example.com/kyc-preview.jpg" />
-  <!-- Favicon -->
-  <link rel="icon" href="%PUBLIC_URL%/favicon.ico" />
-  <!-- Font Awesome -->
+  <title>Epennzy KYC Finder</title>
+  <link rel="icon" href="https://epennzy.com/favicon.ico" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
-  <!-- Tailwind CSS (Opsional) -->
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
     tailwind.config = {
@@ -30,27 +23,60 @@
   </script>
   <style>
     body {
-      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-      background-color: #f8fafc;
-    }
-    .dark body {
-      background-color: #0f172a;
+      font-family: 'Inter', sans-serif;
     }
   </style>
 </head>
-<body class="bg-gray-50 dark:bg-gray-900 transition-colors duration-300">
-  <noscript>Anda perlu mengaktifkan JavaScript untuk menjalankan aplikasi ini.</noscript>
-  <div id="root"></div>
-  <!-- Loader untuk PWA -->
-  <div id="loader" class="fixed inset-0 flex items-center justify-center bg-white dark:bg-gray-900 z-50">
-    <div class="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
+<body class="bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-white">
+  <div class="p-4">
+    <h1 class="text-2xl font-bold text-center mb-4">Job KYC Tersedia</h1>
+    <div id="job-list" class="space-y-4"></div>
   </div>
+
+  <div id="loader" class="fixed inset-0 flex items-center justify-center bg-white dark:bg-gray-900 z-50">
+    <div class="animate-spin rounded-full h-12 w-12 border-t-4 border-b-4 border-primary"></div>
+  </div>
+
+  <!-- Supabase SDK -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
   <script>
-    // Sembunyikan loader setelah React siap
-    document.addEventListener('DOMContentLoaded', () => {
-      const loader = document.getElementById('loader');
-      if (loader) loader.style.display = 'none';
-    });
+    const supabase = supabase.createClient(
+      'https://xlwxgkwaammuhfvlknzk.supabase.co',
+      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inhsd3hna3dhYW1tdWhmdmxrbnprIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTExMjc5ODUsImV4cCI6MjA2NjcwMzk4NX0.fFkTmlTaQaisuVweVEdkuPk9cx_jG0FAx0Gl6y8vg7w'
+    );
+
+    async function loadJobs() {
+      const { data, error } = await supabase.from('jobs').select('*').order('created_at', { ascending: false });
+      document.getElementById('loader').style.display = 'none';
+      const container = document.getElementById('job-list');
+
+      if (error) {
+        container.innerHTML = '<p class="text-red-500">Gagal memuat data job.</p>';
+        console.error(error);
+        return;
+      }
+
+      if (data.length === 0) {
+        container.innerHTML = '<p class="text-center">Belum ada job tersedia.</p>';
+        return;
+      }
+
+      data.forEach(job => {
+        const el = document.createElement('div');
+        el.className = "p-4 rounded-xl shadow bg-white dark:bg-gray-800";
+        el.innerHTML = `
+          <h2 class="text-xl font-semibold mb-1">${job.title}</h2>
+          <p class="mb-2">${job.description || 'Tidak ada deskripsi.'}</p>
+          <div class="flex justify-between items-center">
+            <span class="text-sm text-gray-600 dark:text-gray-300">Bayaran: Rp${job.payment || '0'}</span>
+            <a href="https://wa.me/6289654291565?text=Halo%20saya%20ingin%20apply%20job%20KYC%20${encodeURIComponent(job.title)}" target="_blank" class="bg-primary text-white px-3 py-1 rounded hover:bg-blue-700 transition">Apply</a>
+          </div>
+        `;
+        container.appendChild(el);
+      });
+    }
+
+    document.addEventListener('DOMContentLoaded', loadJobs);
   </script>
 </body>
 </html>
